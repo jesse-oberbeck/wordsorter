@@ -26,20 +26,58 @@ int main(void)
     printf("\nfilesize: %i\n", filesize);
     fseek(words, 0, SEEK_SET);
     
+    //Read in file.
     char *contents = malloc(filesize);
+    char *contents2 = malloc(filesize);
     fread(contents, sizeof(char), filesize, words);
-    fclose(words);
-    
-    //Make empty array for divided string.
-    char *content_array = malloc(filesize);
+    strcpy(contents2, contents);
+    printf("contents: %s\n", contents);
+    //fclose(words);
 
     //WORDCOUNT
-    char *splitstring = strtok(contents, " \n");
+    char *word = strtok(contents, " \n");
     int wordcount = 0;
-    while(splitstring != NULL){
+    while(word != NULL){
         wordcount++;
-        splitstring = strtok(NULL, " \n");
+        word = strtok(NULL, " \n");
     }
     printf("wordcount: %d\n", wordcount);
-
+    
+    //printf("1 contents: %s\n", contents);
+    
+    
+    
+    
+    
+    char **content_array = (char**)malloc(wordcount + 1);
+    //TODO: Nullify last byte of array of strings.
+    *content_array[wordcount] = '\0';
+    puts("test");
+    char *splitstring = strtok(contents2, " \n");
+    //printf("\n2 contents: %s\n", contents2);
+    
+    int i = 0;
+    while(splitstring){
+        //puts("Before copy");
+        content_array[i] = malloc(strlen(splitstring) + 1);
+        strncpy(content_array[i], splitstring, sizeof(content_array));
+        //puts("after copy");
+        i++;
+        printf("thingat ss: %s\n", splitstring);
+        splitstring = strtok(NULL, " \n");
+        //("%s", contents2);
+        //("2 contents: %s\n", contents2);
+   }
+    //printf("thingat ss: %s\n", content_array[0]);
+    
+    
+    puts("FREE");
+    //Free up memory.
+    free(contents);
+    free(contents2);
+    while(i){
+        free(content_array[i]);
+        i--;
+    }
+    free(content_array);
 }
