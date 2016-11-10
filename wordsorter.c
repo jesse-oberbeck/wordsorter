@@ -93,19 +93,20 @@ int main(void)
     free(contents);
 
     
-    char **content_array;
+    char **content_array = {'\0'};
     content_array = malloc(wordcount * (sizeof(char*)));
 
     puts(contents2);
     
-    char *splitstring = strtok(contents2, " \n");
+    char *splitstring = strtok(contents2, " \n\t");
     int i = 0;
     while(splitstring){
+	printf("sizecheck: %li\n", strlen(splitstring) + 1);
         content_array[i] = malloc(strlen(splitstring) + 1);
         strncpy(content_array[i], splitstring, strlen(splitstring));
         printf("thingat ss: %s\n", content_array[i]);
         i++;
-        splitstring = strtok(NULL, " \n");
+        splitstring = strtok(NULL, " \n\t");
 
     }
     
@@ -121,5 +122,8 @@ int main(void)
     puts("\nFREE");
     //Free up memory.
     free(contents2);
+    for(int i = 0; i < wordcount; ++i){
+        free(content_array[i]);
+    }
     free(content_array);
 }
