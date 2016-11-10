@@ -7,6 +7,29 @@ int compare(const void *a, const void *b)
     return(*(int*)a - *(int*)b);
 }
 
+int ascii_cmp(const void *a, const void *b)
+{
+    //puts("called");
+    const char **ap = (const char**)a;
+    const char **bp = (const char**)b;
+    
+    int a_total = 0;
+    int b_total = 0;
+    //printf("strlen a: %d" , (int)strlen(*ap));
+    
+    for(size_t i = 0; i < strlen(*ap); i++){
+        a_total += (int)(*ap[i]);
+    }
+    
+    for(size_t i = 0; i < strlen(*bp); i++){
+        b_total += (int)(*bp[i]);
+    }
+    printf("ascii_cmp return: %d\n", a_total - b_total);
+    return(a_total - b_total);
+    
+}
+
+/*Default Compare.*/
 int str_cmp(const void *a, const void *b)
 {
     const char **ap = (const char**)a;
@@ -15,7 +38,7 @@ int str_cmp(const void *a, const void *b)
 }
 
 
-    /*Get size of file*/
+/*Get size of file*/
 int file_size(FILE *words)
 {
 
@@ -28,26 +51,25 @@ int file_size(FILE *words)
     return(filesize);
 }
 
-    //Read in file.
+/*Read in file.*/
 char * read_file(int filesize, FILE *words)
 {
     char *contents = malloc(filesize);
-    //char *contents2 = malloc(filesize);
     fread(contents, sizeof(char), filesize, words);
-    //strcpy(contents2, contents);
-    //printf("contents: %s\n", contents);
     fclose(words);
     return(contents);
 }
 
-    //WORDCOUNT
+/*Word count. Tokenizes file based on Whitespace
+or newline, increasing a counter on each word.
+returns the value held in the counter.*/
 int word_count(char *contents)
 {
-    char *word = strtok(contents, " \n");
+    char *word = strtok(contents, " \n\t");
     int wordcount = 0;
     while(word != NULL){
         wordcount++;
-        word = strtok(NULL, " \n");
+        word = strtok(NULL, " \n\t");
     }
     printf("wordcount: %d\n", wordcount);
     return(wordcount);
@@ -86,10 +108,9 @@ int main(void)
         splitstring = strtok(NULL, " \n");
 
     }
-    //printf("~~thingat: %s\n", content_array[5]);
     
     qsort(content_array, wordcount, sizeof(char *), str_cmp);
-
+    puts("after sort");
     //Test Print of content_array.
     int i2 = 0;
     for(;i2 < wordcount; ++i2){
