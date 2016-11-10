@@ -45,39 +45,32 @@ int main(void)
     
     //printf("1 contents: %s\n", contents);
     
+
     
-    
-    
-    
-    char **content_array = (char**)malloc(wordcount + 1);
+    char **content_array;
+    content_array = malloc(wordcount * (sizeof(char*)));
     //TODO: Nullify last byte of array of strings.
-    *content_array[wordcount] = '\0';
+    //*content_array[wordcount] = '\0';
+    
     puts("test");
     char *splitstring = strtok(contents2, " \n");
-    //printf("\n2 contents: %s\n", contents2);
     
     int i = 0;
     while(splitstring){
-        //puts("Before copy");
         content_array[i] = malloc(strlen(splitstring) + 1);
         strncpy(content_array[i], splitstring, sizeof(content_array));
-        //puts("after copy");
         i++;
         printf("thingat ss: %s\n", splitstring);
         splitstring = strtok(NULL, " \n");
-        //("%s", contents2);
-        //("2 contents: %s\n", contents2);
+
    }
-    //printf("thingat ss: %s\n", content_array[0]);
+    printf("~~thingat: %s\n", content_array[5]);
     
     
     puts("FREE");
     //Free up memory.
     free(contents);
     free(contents2);
-    while(i){
-        free(content_array[i]);
-        i--;
-    }
+
     free(content_array);
 }
