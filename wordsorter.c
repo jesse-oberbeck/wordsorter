@@ -65,11 +65,11 @@ or newline, increasing a counter on each word.
 returns the value held in the counter.*/
 int word_count(char *contents)
 {
-    char *word = strtok(contents, " \n\t");
+    char *word = strtok(contents, " ;,.\n\t");
     int wordcount = 0;
     while(word != NULL){
         wordcount++;
-        word = strtok(NULL, " \n\t");
+        word = strtok(NULL, " ;,.\n\t");
     }
     printf("wordcount: %d\n", wordcount);
     return(wordcount);
@@ -94,15 +94,15 @@ int main(void)
 
     
     char **content_array = {'\0'};
-    content_array = malloc(wordcount * (sizeof(char*)));
+    content_array = malloc(wordcount * (sizeof(char*) + 1));
 
     puts(contents2);
     
     char *splitstring = strtok(contents2, " \n\t");
     int i = 0;
     while(splitstring){
-	printf("sizecheck: %li\n", strlen(splitstring) + 1);
-        content_array[i] = malloc(strlen(splitstring) + 1);
+	printf("sizecheck: %li, splitstring: %s\n", strlen(splitstring) + 1, splitstring);
+        content_array[i] = calloc(strlen(splitstring) + 1, 1);
         strncpy(content_array[i], splitstring, strlen(splitstring));
         printf("thingat ss: %s\n", content_array[i]);
         i++;
@@ -110,7 +110,7 @@ int main(void)
 
     }
     
-    qsort(content_array, wordcount, sizeof(char *), str_cmp);
+    //qsort(content_array, wordcount, sizeof(char *), str_cmp);
     puts("after sort");
     //Test Print of content_array.
     int i2 = 0;
