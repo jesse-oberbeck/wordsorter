@@ -16,24 +16,24 @@ void print_help(void)
     puts("\t-u only print unique words.");
     puts("\t-h print this help message.");
 }
-/*
-void take_stdin()
+
+char ** take_stdin()
 {
+    puts("Take stdin");
     char **content_array = {'\0'};
-    content_array = malloc(sizeof(char*) + 1);    
-
     int i = 0;
-    while(strcmp(user_in, "end") != 0){
-//USE FGETS TO TAKE STD IN, DO UNTIL "end" is recieved.
-        content_array[i] = calloc(strlen(splitstring) + 1, 1);
-        strncpy(content_array[i], splitstring, strlen(splitstring));
-
+    char *user_in = '\0';
+    content_array = malloc(sizeof(*user_in));
+    user_in = fgets(user_in, 34, stdin);
+    while(user_in != NULL){
+        content_array[i] = calloc(strlen(user_in) + 1, sizeof(char));
+        strncpy(content_array[i], user_in, strlen(user_in) + 1);
+        user_in = fgets(user_in, 34, stdin);
         i++;
-        splitstring = strtok(NULL, " \n\t");
-
     }
+    return(content_array);
 }
-*/
+
 //TODO: Scrabble Compare
 
 /*Numeric Compare.*/
@@ -214,16 +214,19 @@ int main(int argc, char *argv[])
         }
     }
     
-    if(no_flags_flag == 0){
+    if((no_flags_flag == 0) && (argc < 2)){
+        /*for(int i = 0; i < wordcount; ++i){
+            free(content_array[i]);
+            }
+            free(content_array);*/
             puts("Enter words to sort. \"end\" to quit.");
+            content_array = take_stdin();
             qsort(stdin, wordcount, sizeof(char *), str_cmp);
             return(0);
     }
 
     //qsort(content_array, wordcount, sizeof(char *), rev_num_cmp);
-    //puts("after sort");
-    //Test Print of content_array.
-    //printf("r_flags: %d\n\n", r_flag);
+
     if((!r_flag) || (r_flag % 2 == 0)){
         int i2 = 0;
         for(;i2 < lines_to_print; ++i2){
