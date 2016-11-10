@@ -16,7 +16,24 @@ void print_help(void)
     puts("\t-u only print unique words.");
     puts("\t-h print this help message.");
 }
+/*
+void take_stdin()
+{
+    char **content_array = {'\0'};
+    content_array = malloc(sizeof(char*) + 1);    
 
+    int i = 0;
+    while(strcmp(user_in, "end") != 0){
+//USE FGETS TO TAKE STD IN, DO UNTIL "end" is recieved.
+        content_array[i] = calloc(strlen(splitstring) + 1, 1);
+        strncpy(content_array[i], splitstring, strlen(splitstring));
+
+        i++;
+        splitstring = strtok(NULL, " \n\t");
+
+    }
+}
+*/
 //TODO: Scrabble Compare
 
 /*Numeric Compare.*/
@@ -143,23 +160,24 @@ int main(int argc, char *argv[])
     int wordcount = word_count(contents);
     free(contents);
     char **content_array = {'\0'};
-    content_array = malloc(wordcount * (sizeof(char*) + 1));
-    
+    content_array = malloc(wordcount * (sizeof(char*) + 1));    
     char *splitstring = strtok(contents2, " \n\t");
     int i = 0;
     while(splitstring){
-	//printf("sizecheck: %li, splitstring: %s\n", strlen(splitstring) + 1, splitstring);
+
         content_array[i] = calloc(strlen(splitstring) + 1, 1);
         strncpy(content_array[i], splitstring, strlen(splitstring));
-        //printf("thingat ss: %s\n", content_array[i]);
+
         i++;
         splitstring = strtok(NULL, " \n\t");
 
     }
     int lines_to_print = wordcount;
+    int no_flags_flag = 0;
     int r_flag = 0;
     int optflag = 0;
     for(int i = argc; ((optflag = getopt(argc, argv, "c:rnlsauh")) != (-1)); --i){
+        no_flags_flag = 1;
         switch(optflag){
 
             case 'h':
@@ -193,17 +211,19 @@ int main(int argc, char *argv[])
             case 'u':
                 puts("u");
                 break;
-
-            default:
-                qsort(content_array, wordcount, sizeof(char *), str_cmp);
-                break;
         }
     }
     
+    if(no_flags_flag == 0){
+            puts("Enter words to sort. \"end\" to quit.");
+            qsort(stdin, wordcount, sizeof(char *), str_cmp);
+            return(0);
+    }
+
     //qsort(content_array, wordcount, sizeof(char *), rev_num_cmp);
     //puts("after sort");
     //Test Print of content_array.
-    printf("r_flags: %d\n\n", r_flag);
+    //printf("r_flags: %d\n\n", r_flag);
     if((!r_flag) || (r_flag % 2 == 0)){
         int i2 = 0;
         for(;i2 < lines_to_print; ++i2){
