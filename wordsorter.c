@@ -47,6 +47,24 @@ int len_cmp(const void *a, const void *b)
     return(strlen(*ap) - strlen(*bp));
 }
 
+/*Reverse Default Compare.*/
+int rev_str_cmp(const void *a, const void *b)
+{
+    const char **ap = (const char**)a;
+    const char **bp = (const char**)b;
+    return(strcmp(*bp, *ap));
+}
+
+/*Reverse Length Compare.*/
+int rev_len_cmp(const void *a, const void *b)
+{
+    const char **ap = (const char**)a;
+    const char **bp = (const char**)b;
+    return(strlen(*bp) - strlen(*ap));
+}
+
+
+
 
 /*Get size of file*/
 int file_size(FILE *words)
@@ -120,7 +138,7 @@ int main(void)
 
     }
     
-    qsort(content_array, wordcount, sizeof(char *), len_cmp);
+    qsort(content_array, wordcount, sizeof(char *), rev_str_cmp);
     puts("after sort");
     //Test Print of content_array.
     int i2 = 0;
