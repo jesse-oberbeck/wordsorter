@@ -1,11 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
-int compare(const void *a, const void *b)
+void print_help(void)
 {
-    return(*(int*)a - *(int*)b);
+    puts("Usage: wc <file(s)> <options>");
+    puts("\tIf no options are supplied, will sort from stdin.");
+    puts("\t-c <n> print only n results of sorted content.");
+    puts("\t-r print in reverse order.");
+    puts("\t-n numeric sort.");
+    puts("\t-l sort words by length.");
+    puts("\t-s sort by Scrabble score.");
+    puts("\t-a sort to lexicographical order.");
+    puts("\t-u only print unique words.");
+    puts("\t-h print this help message.");
 }
+
+//TODO: Scrabble Compare
 
 /*Numeric Compare.*/
 int num_cmp(const void *a, const void *b)
@@ -116,12 +128,12 @@ int word_count(char *contents)
         wordcount++;
         word = strtok(NULL, " ;,.\n\t");
     }
-    printf("wordcount: %d\n", wordcount);
+    printf("wordcount: %d\n\n", wordcount);
     return(wordcount);
 }
 
 
-int main(void)
+int main(int argc, char *argv[])
 {
     FILE *words = fopen("sorttest", "r");
     int filesize = file_size(words);
@@ -130,7 +142,6 @@ int main(void)
     strcpy(contents2, contents);
     int wordcount = word_count(contents);
     free(contents);
-
     char **content_array = {'\0'};
     content_array = malloc(wordcount * (sizeof(char*) + 1));
     
@@ -145,13 +156,64 @@ int main(void)
         splitstring = strtok(NULL, " \n\t");
 
     }
+    int lines_to_print = wordcount;
+    int r_flag = 0;
+    int optflag = 0;
+    for(int i = argc; ((optflag = getopt(argc, argv, "c:rnlsauh")) != (-1)); --i){
+        switch(optflag){
+
+            case 'h':
+                print_help();
+                exit(0);
+
+            case 'r':
+                r_flag += 1;
+                break;
+
+            case 'c':
+                lines_to_print = strtol(optarg, NULL, 10);
+                break;
+
+            case 'n':
+                qsort(content_array, wordcount, sizeof(char *), num_cmp);
+                break;
+
+            case 'l':
+                qsort(content_array, wordcount, sizeof(char *), len_cmp);
+                break;
+
+            case 's':
+                puts("s");
+                break;
+
+            case 'a':
+                qsort(content_array, wordcount, sizeof(char *), str_cmp);
+                break;
+
+            case 'u':
+                puts("u");
+                break;
+
+            default:
+                qsort(content_array, wordcount, sizeof(char *), str_cmp);
+                break;
+        }
+    }
     
-    qsort(content_array, wordcount, sizeof(char *), rev_num_cmp);
-    puts("after sort");
+    //qsort(content_array, wordcount, sizeof(char *), rev_num_cmp);
+    //puts("after sort");
     //Test Print of content_array.
-    int i2 = 0;
-    for(;i2 < wordcount; ++i2){
-        puts(content_array[i2]);
+    printf("r_flags: %d\n\n", r_flag);
+    if((!r_flag) || (r_flag % 2 == 0)){
+        int i2 = 0;
+        for(;i2 < lines_to_print; ++i2){
+            puts(content_array[i2]);
+        }
+    }else{
+        int i2 = lines_to_print - 1;
+        for(;i2 >= 0; --i2){
+            puts(content_array[i2]);
+        }
     }
 
 
