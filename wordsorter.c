@@ -7,6 +7,7 @@ int compare(const void *a, const void *b)
     return(*(int*)a - *(int*)b);
 }
 
+/*
 int ascii_cmp(const void *a, const void *b)
 {
     //puts("called");
@@ -28,6 +29,7 @@ int ascii_cmp(const void *a, const void *b)
     return(a_total - b_total);
     
 }
+*/
 
 /*Default Compare.*/
 int str_cmp(const void *a, const void *b)
@@ -35,6 +37,14 @@ int str_cmp(const void *a, const void *b)
     const char **ap = (const char**)a;
     const char **bp = (const char**)b;
     return(strcmp(*ap, *bp));
+}
+
+/*Length Compare.*/
+int len_cmp(const void *a, const void *b)
+{
+    const char **ap = (const char**)a;
+    const char **bp = (const char**)b;
+    return(strlen(*ap) - strlen(*bp));
 }
 
 
@@ -78,11 +88,11 @@ int word_count(char *contents)
 
 int main(void)
 {
-    int testing[5] = {8, 9, 0, 5, 1};
-    qsort(testing, 5, sizeof(int), compare);
-    for(int i = 0; i < 5; i++){
-        printf("%d, ", testing[i]);
-    }
+    //int testing[5] = {8, 9, 0, 5, 1};
+    //qsort(testing, 5, sizeof(int), compare);
+    //for(int i = 0; i < 5; i++){
+    //    printf("%d, ", testing[i]);
+    //}
     
     FILE *words = fopen("sorttest", "r");
     int filesize = file_size(words);
@@ -96,21 +106,21 @@ int main(void)
     char **content_array = {'\0'};
     content_array = malloc(wordcount * (sizeof(char*) + 1));
 
-    puts(contents2);
+    //puts(contents2);
     
     char *splitstring = strtok(contents2, " \n\t");
     int i = 0;
     while(splitstring){
-	printf("sizecheck: %li, splitstring: %s\n", strlen(splitstring) + 1, splitstring);
+	//printf("sizecheck: %li, splitstring: %s\n", strlen(splitstring) + 1, splitstring);
         content_array[i] = calloc(strlen(splitstring) + 1, 1);
         strncpy(content_array[i], splitstring, strlen(splitstring));
-        printf("thingat ss: %s\n", content_array[i]);
+        //printf("thingat ss: %s\n", content_array[i]);
         i++;
         splitstring = strtok(NULL, " \n\t");
 
     }
     
-    //qsort(content_array, wordcount, sizeof(char *), str_cmp);
+    qsort(content_array, wordcount, sizeof(char *), len_cmp);
     puts("after sort");
     //Test Print of content_array.
     int i2 = 0;
