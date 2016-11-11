@@ -241,9 +241,8 @@ int word_count(char *contents)
 
 /*Reads the file passed, adjustst wordcount and 
 returns an array of tokenized words from the file*/
-char ** setup(int *wordcount, const char *filename)
+char ** setup(int *wordcount, const char *filename, int *ai)
 {
-    puts("setup");
     puts(filename);
     FILE *words = fopen(filename, "r");
     int filesize = file_size(words);
@@ -255,9 +254,8 @@ char ** setup(int *wordcount, const char *filename)
     char **content_array = {'\0'};
     content_array = malloc(*wordcount * (int)(sizeof(char*) + 1));    
     char *splitstring = strtok(contents2, " \n\t");
-    int i = 0;
+    int i = *ai;
     while(splitstring){
-
         content_array[i] = calloc(strlen(splitstring) + 1, 1);
         strncpy(content_array[i], splitstring, strlen(splitstring));
 
@@ -265,6 +263,7 @@ char ** setup(int *wordcount, const char *filename)
         splitstring = strtok(NULL, " \n\t");
 
     }
+    *ai = i;
     free(contents2);
     return(content_array);
 }
@@ -334,6 +333,7 @@ void array_free(char **content_array, int *wordcount)
 
 int main(int argc, char *argv[])
 {
+    int ai = 0;
     char filename[32];
     char *path = getenv("HOME");
     snprintf(filename, sizeof(filename), argv[1], path);
@@ -351,9 +351,7 @@ int main(int argc, char *argv[])
     int u_flag = 0;
     int optflag = 0;
     int sort_type = 0;
-    printf("Number of args: %d\n", argc);
     for(int i = argc; ((optflag = getopt(argc, argv, "c:rnlsauh")) != -1); --i){ //flag check adopted from: https://linux.die.net/man/3/optarg
-        printf(" SWITCHES! switch{%c}-%d" ,optflag, i);
         switch(optflag){
 
             case 'h':
@@ -395,7 +393,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    printf("nff: %d\n", no_flags_flag);
     //Handle run if no args passed.    
     if((no_flags_flag == 0) && (argc < 2)){
 
@@ -412,41 +409,31 @@ int main(int argc, char *argv[])
             print_sorted(r_flag, lines_to_print, content_array);
             array_free(content_array, &wordcount);
             exit(0);
-    }/*else if(no_flags_flag == 0){
-        puts("no flags");
-        for(int i = 0; i < argc; ++i){
-            filename = malloc(strlen(argv[i]));
-            strcpy(filename, optind);
-	    puts(filename);
-        }
-    }*/
-    puts("prepping to sort");
-    if(filename == NULL){
-        puts("NO FILENAME");
-        exit(1);
-        //memcpy(filename, "sorttest", strlen("sorttest") + 1);
-        //puts(filename);
     }
-    printf("filename: %s\n",filename);
-    char **content_array = setup(&wordcount, filename);
+    if(filename == NULL){
+        exit(1);
+    }
+    printf("AI BEFORE: %d\n", ai);
+    char **content_array = setup(&wordcount, filename, &ai);
+    printf("AI AFTER: %d\n", ai);
     if(u_flag == 1){
         content_array = make_unique(content_array, &wordcount);
     }
     lines_to_print = wordcount;
     if(sort_type == 0){
-        puts("default sort");
+        //puts("default sort");
         qsort(content_array, wordcount, sizeof(char *), str_cmp);
     }
     else if(sort_type == 1){
-        puts("len sort");
+        //puts("len sort");
         qsort(content_array, wordcount, sizeof(char *), len_cmp);
     }
     else if(sort_type == 2){
-        puts("num sort");
+        //puts("num sort");
         qsort(content_array, wordcount, sizeof(char *), num_cmp);
     }
     else if(sort_type == 3){
-        puts("scrabble sort");
+        //puts("scrabble sort");
         qsort(content_array, wordcount, sizeof(char *), scr_cmp);
     }
 
