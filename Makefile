@@ -10,9 +10,15 @@ LDLIBS+=-lm
 
 .PHONY: clean debug profile
 
-clean:rm $(TARGET)
-debug: CFLAGS+=-g
-debug: $(BIN)
-profile: CFLAGS+=-pg
-profile: LDFLAGS+=-pg
-profile: $(BIN)
+clean: 
+	rm $(TARGET)
+debug: 
+	CFLAGS+=-g
+debug: 
+	cc -g ws.c
+profile: 
+	FLAGS+=-pg
+profile: 
+	LDFLAGS+=-pg
+profile: 
+	$(BIN)

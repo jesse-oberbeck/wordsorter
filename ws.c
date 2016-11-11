@@ -23,8 +23,9 @@ char ** take_stdin()
     content_array = calloc(50 * (sizeof(char*) + 1),1);    
     
     int i = 0;
-    char *user_in = calloc(35,1);
-    user_in = fgets(user_in, 34, stdin);
+    char *user_in;
+    char *temp = calloc(35,1);
+    user_in = fgets(temp, 34, stdin);
     //char *splitstring = strtok(user_in, " \n\t");
     while(user_in != NULL){
         //puts("inside while");
@@ -41,10 +42,114 @@ char ** take_stdin()
         //splitstring = strtok(NULL, " \n\t");
 
     }
+    free(temp);
     return(content_array);
 }
 
-//TODO: Scrabble Compare
+int scrabble_convert(char letter)
+{
+    int score = 0;
+    switch(letter){   
+        case 'A': 
+            score += 1; 
+            break;
+        case 'B': 
+            score +=  3;
+            break;
+        case 'C': 
+            score +=  3;
+            break;
+        case 'D': 
+            score +=  2;
+            break;
+        case 'E':
+            score +=  1;
+            break;
+        case 'F':
+            score +=  4;
+            break;
+        case 'G':
+            score +=  2;
+            break;
+        case 'H':
+            score +=  4;
+            break;
+        case 'I':
+            score +=  1;
+            break;
+        case 'J': 
+            score +=  8;
+            break;
+        case 'K':
+            score +=  5;
+            break;
+        case 'L':
+            score +=  1;
+            break;
+        case 'M':
+            score +=  3;
+            break;
+        case 'N':
+            score +=  1;
+            break;
+        case 'O':
+            score +=  1;
+            break;
+        case 'P':
+            score +=  3;
+            break;
+        case 'Q':
+            score +=  10;
+            break;
+        case 'R':
+            score +=  1;
+            break;
+        case 'S':
+            score +=  1;
+            break;
+        case 'T':
+            score +=  1;
+            break;
+        case 'U':
+            score +=  1;
+            break;
+        case 'V':
+            score +=  4;
+            break;
+        case 'W':
+            score +=  4;
+            break;
+        case 'X':
+            score +=  8;
+            break;
+        case 'Y':
+            score +=  4;
+            break;
+        case 'Z':
+            score +=  10;
+            break;
+    }
+    return(score);
+}
+
+int scr_cmp(const void *a, const void *b)
+{
+    char **ap = (char**)a;
+    char **bp = (char**)b;
+    int total_score_a = 0;
+    int total_score_b = 0;
+    for(size_t i = 0; i < strlen(*ap); ++i){
+        char letter = *ap[i];
+        total_score_a += scrabble_convert(letter);
+    }
+    for(size_t i = 0; i < strlen(*bp); ++i){
+        char letter = *bp[i];
+        total_score_b += scrabble_convert(letter);
+    }
+    printf("totals %d - %d = %d\n", total_score_a, total_score_b, (total_score_a - total_score_b));
+    return(total_score_a - total_score_b);
+}
+
 
 /*Numeric Compare.*/
 int num_cmp(const void *a, const void *b)
@@ -197,6 +302,14 @@ char ** make_unique(char **content_array, int *wordcount)
     return(unique_array);
 }
 
+void array_free(char **content_array, int *wordcount)
+{
+    for(int i = 0; i < *wordcount; ++i){
+        free(content_array[i]);
+    }
+    free(content_array);
+}
+
 int main(int argc, char *argv[])
 {
     int wordcount = 0;
@@ -231,7 +344,7 @@ int main(int argc, char *argv[])
                 break;
 
             case 's':
-                puts("s");
+                sort_type = 3;
                 break;
 
             case 'a':
@@ -258,6 +371,7 @@ int main(int argc, char *argv[])
             qsort(content_array, i2, sizeof(char *), str_cmp);
             puts("\n\n");
             print_sorted(r_flag, lines_to_print, content_array);
+            array_free(content_array, &wordcount);
             exit(0);
     }else{
         for(int i = 0; i < argc; ++i){
@@ -280,14 +394,15 @@ int main(int argc, char *argv[])
     else if(sort_type == 2){
         qsort(content_array, wordcount, sizeof(char *), num_cmp);
     }
+    else if(sort_type == 3){
+        puts("scrabble sort");
+        qsort(content_array, wordcount, sizeof(char *), scr_cmp);
+    }
 
     //Call Print
     printf("lines: %d\n", lines_to_print);
     print_sorted(r_flag, lines_to_print, content_array);
 
     //Free up memory.
-    for(int i = 0; i < wordcount; ++i){
-        free(content_array[i]);
-    }
-    free(content_array);
+    array_free(content_array, &wordcount);
 }
