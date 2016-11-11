@@ -19,6 +19,8 @@ void print_help(void)
     puts("\t-h print this help message.");
 }
 
+/*If no file is given as argv[1], takes words from
+stdin until Ctrl-D is pressed.*/
 char ** take_stdin()
 {
     char **content_array = {'\0'};
@@ -48,6 +50,7 @@ char ** take_stdin()
     return(content_array);
 }
 
+/*Returns scrabble letter score.*/
 int scrabble_convert(char letter)
 {
     int score = 0;
@@ -157,7 +160,7 @@ int scr_cmp(const void *a, const void *b)
             total_score_b += scrabble_convert(letter_b);
         }
     }
-    printf("totals %d - %d = %d\n", total_score_a, total_score_b, (total_score_a - total_score_b));
+    //printf("totals %d - %d = %d\n", total_score_a, total_score_b, (total_score_a - total_score_b));
     return(total_score_a - total_score_b);
 }
 
@@ -266,6 +269,7 @@ char ** setup(int *wordcount, const char *filename)
     return(content_array);
 }
 
+/*Prints items in array in order based on flag from args.*/
 void print_sorted(int r_flag, int lines_to_print, char **content_array)
 {
     puts("Sorted:");
@@ -286,6 +290,8 @@ void print_sorted(int r_flag, int lines_to_print, char **content_array)
     }
 }
 
+
+/*Filters array so a word only appears once.*/
 char ** make_unique(char **content_array, int *wordcount)
 {
     char **unique_array = malloc(*wordcount * (int)(sizeof(char*) + 1));
@@ -317,6 +323,7 @@ char ** make_unique(char **content_array, int *wordcount)
     return(unique_array);
 }
 
+/*Frees allocated space in array, then array itself.*/
 void array_free(char **content_array, int *wordcount)
 {
     for(int i = 0; i < *wordcount; ++i){
