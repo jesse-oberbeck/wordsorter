@@ -139,17 +139,25 @@ int scr_cmp(const void *a, const void *b)
 {
     char **ap = (char**)a;
     char **bp = (char**)b;
+    //puts(*ap);
+    //puts(*bp);
     int total_score_a = 0;
     int total_score_b = 0;
-    for(size_t i = 0; i < strlen(*ap); ++i){
-        char letter = toupper(*ap[i]);
-        total_score_a += scrabble_convert(letter);
+    for(size_t i = 0; i < strlen(ap[0]); ++i){
+        if(isalpha(bp[0][i])){
+            char letter_a = toupper(ap[0][i]);
+            //printf("letter a: %c to A: %c index: %li\n",ap[0][i], letter_a, i);
+            total_score_a += scrabble_convert(letter_a);
+        }
     }
-    for(size_t i2 = 0; i2 < strlen(*bp); ++i2){
-        char letter = toupper(*bp[i2]);
-        total_score_b += scrabble_convert(letter);
+    for(size_t i2 = 0; i2 < strlen(bp[0]); ++i2){
+        if(isalpha(bp[0][i2])){
+            char letter_b = toupper(bp[0][i2]);
+            //printf("letter b: %c\n", letter_b);
+            total_score_b += scrabble_convert(letter_b);
+        }
     }
-    //printf("totals %d - %d = %d\n", total_score_a, total_score_b, (total_score_a - total_score_b));
+    printf("totals %d - %d = %d\n", total_score_a, total_score_b, (total_score_a - total_score_b));
     return(total_score_a - total_score_b);
 }
 
@@ -228,6 +236,8 @@ int word_count(char *contents)
     return(wordcount);
 }
 
+/*Reads the file passed, adjustst wordcount and 
+returns an array of tokenized words from the file*/
 char ** setup(int *wordcount, const char *filename)
 {
     puts("setup");
@@ -317,13 +327,16 @@ void array_free(char **content_array, int *wordcount)
 
 int main(int argc, char *argv[])
 {
-    char *filename = '\0';
-    if(access(argv[1], F_OK) == -1){
-        perror("First argument must be file name!");
+    char filename[32];
+    char *path = getenv("HOME");
+    snprintf(filename, sizeof(filename), argv[1], path);
+    if((access(filename, F_OK) == -1) && (argc > 1)){
+        printf("Number of args: %d\n", argc);
+        perror("First argument must be a file");
         exit(1);
-    }else{
-        strcpy(filename, argv[1]);
     }
+
+    
     int wordcount = 0;
     int lines_to_print = wordcount;
     int no_flags_flag = 0;
@@ -331,8 +344,9 @@ int main(int argc, char *argv[])
     int u_flag = 0;
     int optflag = 0;
     int sort_type = 0;
-    //char *filename = '\0';
-    for(int i = argc; i > 1; --i){
+    printf("Number of args: %d\n", argc);
+    for(int i = argc; ((optflag = getopt(argc, argv, "c:rnlsauh")) != -1); --i){ //flag check adopted from: https://linux.die.net/man/3/optarg
+        printf(" SWITCHES! switch{%c}-%d" ,optflag, i);
         switch(optflag){
 
             case 'h':
@@ -413,12 +427,15 @@ int main(int argc, char *argv[])
     }
     lines_to_print = wordcount;
     if(sort_type == 0){
+        puts("default sort");
         qsort(content_array, wordcount, sizeof(char *), str_cmp);
     }
     else if(sort_type == 1){
+        puts("len sort");
         qsort(content_array, wordcount, sizeof(char *), len_cmp);
     }
     else if(sort_type == 2){
+        puts("num sort");
         qsort(content_array, wordcount, sizeof(char *), num_cmp);
     }
     else if(sort_type == 3){
