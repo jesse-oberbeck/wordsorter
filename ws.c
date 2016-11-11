@@ -3,6 +3,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <ctype.h>
+#include <unistd.h>
 
 void print_help(void)
 {
@@ -229,6 +230,8 @@ int word_count(char *contents)
 
 char ** setup(int *wordcount, const char *filename)
 {
+    puts("setup");
+    puts(filename);
     FILE *words = fopen(filename, "r");
     int filesize = file_size(words);
     char *contents = read_file(filesize, words);
@@ -314,6 +317,13 @@ void array_free(char **content_array, int *wordcount)
 
 int main(int argc, char *argv[])
 {
+    char *filename = '\0';
+    if(access(argv[1], F_OK) == -1){
+        perror("First argument must be file name!");
+        exit(1);
+    }else{
+        strcpy(filename, argv[1]);
+    }
     int wordcount = 0;
     int lines_to_print = wordcount;
     int no_flags_flag = 0;
@@ -321,8 +331,8 @@ int main(int argc, char *argv[])
     int u_flag = 0;
     int optflag = 0;
     int sort_type = 0;
-    for(int i = argc; ((optflag = getopt(argc, argv, "c:rnlsauh")) != (-1)); --i){
-        no_flags_flag = 1;
+    //char *filename = '\0';
+    for(int i = argc; i > 1; --i){
         switch(optflag){
 
             case 'h':
@@ -331,6 +341,7 @@ int main(int argc, char *argv[])
 
             case 'r':
                 r_flag += 1;
+                no_flags_flag = 1;
                 break;
 
             case 'c':
@@ -339,18 +350,22 @@ int main(int argc, char *argv[])
 
             case 'n':
                 sort_type = 2;
+                no_flags_flag = 1;
                 break;
 
             case 'l':
                 sort_type = 1;
+                no_flags_flag = 1;
                 break;
 
             case 's':
                 sort_type = 3;
+                no_flags_flag = 1;
                 break;
 
             case 'a':
                 sort_type = 0;
+                no_flags_flag = 1;
                 break;
 
             case 'u':
@@ -359,6 +374,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    printf("nff: %d\n", no_flags_flag);
     //Handle run if no args passed.    
     if((no_flags_flag == 0) && (argc < 2)){
 
@@ -375,13 +391,22 @@ int main(int argc, char *argv[])
             print_sorted(r_flag, lines_to_print, content_array);
             array_free(content_array, &wordcount);
             exit(0);
-    }else{
+    }/*else if(no_flags_flag == 0){
+        puts("no flags");
         for(int i = 0; i < argc; ++i){
-            printf("%s\n", argv[i]);
+            filename = malloc(strlen(argv[i]));
+            strcpy(filename, optind);
+	    puts(filename);
         }
-    }
+    }*/
     puts("prepping to sort");
-    const char *filename = "sorttest";
+    if(filename == NULL){
+        puts("NO FILENAME");
+        exit(1);
+        //memcpy(filename, "sorttest", strlen("sorttest") + 1);
+        //puts(filename);
+    }
+    printf("filename: %s\n",filename);
     char **content_array = setup(&wordcount, filename);
     if(u_flag == 1){
         content_array = make_unique(content_array, &wordcount);
