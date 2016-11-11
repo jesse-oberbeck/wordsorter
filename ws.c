@@ -19,17 +19,27 @@ void print_help(void)
 
 char ** take_stdin()
 {
-    puts("Take stdin");
     char **content_array = {'\0'};
+    content_array = calloc(50 * (sizeof(char*) + 1),1);    
+    
     int i = 0;
-    char *user_in = '\0';
-    content_array = malloc(sizeof(*user_in));
+    char *user_in = calloc(35,1);
     user_in = fgets(user_in, 34, stdin);
+    //char *splitstring = strtok(user_in, " \n\t");
     while(user_in != NULL){
-        content_array[i] = calloc(strlen(user_in) + 1, sizeof(char));
-        strncpy(content_array[i], user_in, strlen(user_in) + 1);
+        //puts("inside while");
+        for(size_t i2 = 0;i2 < strlen(user_in); ++i2){
+            if(user_in[i2] == '\n'){
+                user_in[i2] = '\0';
+            }
+        }
+        //printf("%s",user_in);
+        content_array[i] = calloc(strlen(user_in) + 1, 1);
+        strncpy(content_array[i], user_in, strlen(user_in));
         user_in = fgets(user_in, 34, stdin);
         i++;
+        //splitstring = strtok(NULL, " \n\t");
+
     }
     return(content_array);
 }
@@ -73,45 +83,6 @@ int len_cmp(const void *a, const void *b)
     return(strlen(*ap) - strlen(*bp));
 }
 
-/*Reverse Default Compare.*/
-int rev_str_cmp(const void *a, const void *b)
-{
-    char **ap = (char**)a;
-    char **bp = (char**)b;
-    return(strcmp(*bp, *ap));
-}
-
-/*Reverse Length Compare.*/
-int rev_len_cmp(const void *a, const void *b)
-{
-    char **ap = (char**)a;
-    char **bp = (char**)b;
-    return(strlen(*bp) - strlen(*ap));
-}
-
-/*Reverse Numeric Compare.*/
-int rev_num_cmp(const void *a, const void *b)
-{
-    char **ap = (char**)a;
-    char **bp = (char**)b;
-    char *a_buf = (char*)malloc(strlen(*ap) + 1);
-    char *b_buf = (char*)malloc(strlen(*bp) + 1);
-    int a_num = strtol(*ap, &a_buf, 10);
-    int b_num = strtol(*bp, &b_buf, 10);
-
-    if(a_num && (!b_num)){
-        return(-1);
-    }else if(b_num && (!a_num)){
-        return(1);
-    }else if(!b_num && !a_num){
-        return(strcmp(*bp, *ap));
-    }else{
-        return(b_num - a_num);
-    }
-}
-
-
-
 /*Get size of file*/
 int file_size(FILE *words)
 {
@@ -149,18 +120,17 @@ int word_count(char *contents)
     return(wordcount);
 }
 
-
-int main(int argc, char *argv[])
+char ** setup(int *wordcount, const char *filename)
 {
-    FILE *words = fopen("sorttest", "r");
+    FILE *words = fopen(filename, "r");
     int filesize = file_size(words);
     char *contents = read_file(filesize, words);
     char *contents2 = malloc(filesize);
     strcpy(contents2, contents);
-    int wordcount = word_count(contents);
+    *wordcount = word_count(contents);
     free(contents);
     char **content_array = {'\0'};
-    content_array = malloc(wordcount * (sizeof(char*) + 1));    
+    content_array = malloc(*wordcount * (int)(sizeof(char*) + 1));    
     char *splitstring = strtok(contents2, " \n\t");
     int i = 0;
     while(splitstring){
@@ -172,10 +142,70 @@ int main(int argc, char *argv[])
         splitstring = strtok(NULL, " \n\t");
 
     }
+    free(contents2);
+    return(content_array);
+}
+
+void print_sorted(int r_flag, int lines_to_print, char **content_array)
+{
+    puts("Sorted:");
+    printf("lines: %d\n", lines_to_print);
+    //Print forward.
+    if((!r_flag) || (r_flag % 2 == 0)){
+        int i2 = 0;
+        for(;i2 < lines_to_print; ++i2){
+            puts(content_array[i2]);
+        }
+
+    //Print reversed.
+    }else{
+        int i2 = lines_to_print - 1;
+        for(;i2 >= 0; --i2){
+            puts(content_array[i2]);
+        }
+    }
+}
+
+char ** make_unique(char **content_array, int *wordcount)
+{
+    char **unique_array = malloc(*wordcount * (int)(sizeof(char*) + 1));
+    int i = 0;
+    int index = 0;
+    int match_flag = 0;
+    while(i < 348){
+        for(int i2 = 0; unique_array[i2] != '\0'; ++i2){
+            //printf("i: %d i2: %d\n", i, i2);
+            if(strcmp(content_array[i], unique_array[i2]) == 0){
+                //puts("match found");
+                match_flag = 1;
+                continue;
+            }
+        }
+        if(match_flag == 0){
+            //puts("no matches");
+            unique_array[index] = calloc(strlen(content_array[i]) + 1, 1);
+            strncpy(unique_array[index], content_array[i], strlen(content_array[i]));
+            //printf("added: %s\n", unique_array[index]);
+            index++;
+        }
+        match_flag = 0;
+        i++;
+    }
+    *wordcount = index;
+    //print_sorted(0, index, unique_array);
+    //exit(0); 
+    return(unique_array);
+}
+
+int main(int argc, char *argv[])
+{
+    int wordcount = 0;
     int lines_to_print = wordcount;
     int no_flags_flag = 0;
     int r_flag = 0;
+    int u_flag = 0;
     int optflag = 0;
+    int sort_type = 0;
     for(int i = argc; ((optflag = getopt(argc, argv, "c:rnlsauh")) != (-1)); --i){
         no_flags_flag = 1;
         switch(optflag){
@@ -193,11 +223,11 @@ int main(int argc, char *argv[])
                 break;
 
             case 'n':
-                qsort(content_array, wordcount, sizeof(char *), num_cmp);
+                sort_type = 2;
                 break;
 
             case 'l':
-                qsort(content_array, wordcount, sizeof(char *), len_cmp);
+                sort_type = 1;
                 break;
 
             case 's':
@@ -205,44 +235,57 @@ int main(int argc, char *argv[])
                 break;
 
             case 'a':
-                qsort(content_array, wordcount, sizeof(char *), str_cmp);
+                sort_type = 0;
                 break;
 
             case 'u':
-                puts("u");
+                u_flag = 1;
                 break;
         }
     }
-    
+
+    //Handle run if no args passed.    
     if((no_flags_flag == 0) && (argc < 2)){
-        /*for(int i = 0; i < wordcount; ++i){
-            free(content_array[i]);
-            }
-            free(content_array);*/
-            puts("Enter words to sort. \"end\" to quit.");
+
+            puts("Enter words to sort. Ctrl-D to stop, and sort.");
+            char **content_array;
             content_array = take_stdin();
-            qsort(stdin, wordcount, sizeof(char *), str_cmp);
-            return(0);
-    }
-
-    //qsort(content_array, wordcount, sizeof(char *), rev_num_cmp);
-
-    if((!r_flag) || (r_flag % 2 == 0)){
-        int i2 = 0;
-        for(;i2 < lines_to_print; ++i2){
-            puts(content_array[i2]);
-        }
+            int i2 = 0;
+            //Loop only exists to increment i2.
+            for(;content_array[i2] != NULL; ++i2);
+            lines_to_print = i2;
+            wordcount = i2;
+            qsort(content_array, i2, sizeof(char *), str_cmp);
+            puts("\n\n");
+            print_sorted(r_flag, lines_to_print, content_array);
+            exit(0);
     }else{
-        int i2 = lines_to_print - 1;
-        for(;i2 >= 0; --i2){
-            puts(content_array[i2]);
+        for(int i = 0; i < argc; ++i){
+            printf("%s\n", argv[i]);
         }
     }
+    puts("prepping to sort");
+    const char *filename = "sorttest";
+    char **content_array = setup(&wordcount, filename);
+    if(u_flag == 1){
+        content_array = make_unique(content_array, &wordcount);
+    }
+    lines_to_print = wordcount;
+    if(sort_type == 0){
+        qsort(content_array, wordcount, sizeof(char *), str_cmp);
+    }
+    else if(sort_type == 1){
+        qsort(content_array, wordcount, sizeof(char *), len_cmp);
+    }
+    else if(sort_type == 2){
+        qsort(content_array, wordcount, sizeof(char *), num_cmp);
+    }
 
+    //Call Print
+    printf("lines: %d\n", lines_to_print);
+    print_sorted(r_flag, lines_to_print, content_array);
 
-    puts("\nFREE");
     //Free up memory.
-    free(contents2);
     for(int i = 0; i < wordcount; ++i){
         free(content_array[i]);
     }
