@@ -3,6 +3,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <ctype.h>
+#include <unistd.h>
 
 void print_help(void)
 {
@@ -18,6 +19,8 @@ void print_help(void)
     puts("\t-h print this help message.");
 }
 
+/*If no file is given as argv[1], takes words from
+stdin until Ctrl-D is pressed.*/
 char ** take_stdin()
 {
     char **content_array = {'\0'};
@@ -47,6 +50,7 @@ char ** take_stdin()
     return(content_array);
 }
 
+/*Returns scrabble letter score.*/
 int scrabble_convert(char letter)
 {
     int score = 0;
@@ -138,15 +142,23 @@ int scr_cmp(const void *a, const void *b)
 {
     char **ap = (char**)a;
     char **bp = (char**)b;
+    //puts(*ap);
+    //puts(*bp);
     int total_score_a = 0;
     int total_score_b = 0;
-    for(size_t i = 0; i < strlen(*ap); ++i){
-        char letter = toupper(*ap[i]);
-        total_score_a += scrabble_convert(letter);
+    for(size_t i = 0; i < strlen(ap[0]); ++i){
+        if(isalpha(bp[0][i])){
+            char letter_a = toupper(ap[0][i]);
+            //printf("letter a: %c to A: %c index: %li\n",ap[0][i], letter_a, i);
+            total_score_a += scrabble_convert(letter_a);
+        }
     }
-    for(size_t i2 = 0; i2 < strlen(*bp); ++i2){
-        char letter = toupper(*bp[i2]);
-        total_score_b += scrabble_convert(letter);
+    for(size_t i2 = 0; i2 < strlen(bp[0]); ++i2){
+        if(isalpha(bp[0][i2])){
+            char letter_b = toupper(bp[0][i2]);
+            //printf("letter b: %c\n", letter_b);
+            total_score_b += scrabble_convert(letter_b);
+        }
     }
     //printf("totals %d - %d = %d\n", total_score_a, total_score_b, (total_score_a - total_score_b));
     return(total_score_a - total_score_b);
@@ -227,8 +239,11 @@ int word_count(char *contents)
     return(wordcount);
 }
 
-char ** setup(int *wordcount, const char *filename)
+/*Reads the file passed, adjustst wordcount and 
+returns an array of tokenized words from the file*/
+char ** setup(int *wordcount, const char *filename, int *ai)
 {
+    puts(filename);
     FILE *words = fopen(filename, "r");
     int filesize = file_size(words);
     char *contents = read_file(filesize, words);
@@ -239,9 +254,8 @@ char ** setup(int *wordcount, const char *filename)
     char **content_array = {'\0'};
     content_array = malloc(*wordcount * (int)(sizeof(char*) + 1));    
     char *splitstring = strtok(contents2, " \n\t");
-    int i = 0;
+    int i = *ai;
     while(splitstring){
-
         content_array[i] = calloc(strlen(splitstring) + 1, 1);
         strncpy(content_array[i], splitstring, strlen(splitstring));
 
@@ -249,10 +263,12 @@ char ** setup(int *wordcount, const char *filename)
         splitstring = strtok(NULL, " \n\t");
 
     }
+    *ai = i;
     free(contents2);
     return(content_array);
 }
 
+/*Prints items in array in order based on flag from args.*/
 void print_sorted(int r_flag, int lines_to_print, char **content_array)
 {
     puts("Sorted:");
@@ -273,6 +289,8 @@ void print_sorted(int r_flag, int lines_to_print, char **content_array)
     }
 }
 
+
+/*Filters array so a word only appears once.*/
 char ** make_unique(char **content_array, int *wordcount)
 {
     char **unique_array = malloc(*wordcount * (int)(sizeof(char*) + 1));
@@ -304,6 +322,7 @@ char ** make_unique(char **content_array, int *wordcount)
     return(unique_array);
 }
 
+/*Frees allocated space in array, then array itself.*/
 void array_free(char **content_array, int *wordcount)
 {
     for(int i = 0; i < *wordcount; ++i){
@@ -314,6 +333,17 @@ void array_free(char **content_array, int *wordcount)
 
 int main(int argc, char *argv[])
 {
+    int ai = 0;
+    char filename[32];
+    char *path = getenv("HOME");
+    snprintf(filename, sizeof(filename), argv[1], path);
+    if((access(filename, F_OK) == -1) && (argc > 1)){
+        printf("Number of args: %d\n", argc);
+        perror("First argument must be a file");
+        exit(1);
+    }
+
+    
     int wordcount = 0;
     int lines_to_print = wordcount;
     int no_flags_flag = 0;
@@ -321,8 +351,7 @@ int main(int argc, char *argv[])
     int u_flag = 0;
     int optflag = 0;
     int sort_type = 0;
-    for(int i = argc; ((optflag = getopt(argc, argv, "c:rnlsauh")) != (-1)); --i){
-        no_flags_flag = 1;
+    for(int i = argc; ((optflag = getopt(argc, argv, "c:rnlsauh")) != -1); --i){ //flag check adopted from: https://linux.die.net/man/3/optarg
         switch(optflag){
 
             case 'h':
@@ -331,6 +360,7 @@ int main(int argc, char *argv[])
 
             case 'r':
                 r_flag += 1;
+                no_flags_flag = 1;
                 break;
 
             case 'c':
@@ -339,18 +369,22 @@ int main(int argc, char *argv[])
 
             case 'n':
                 sort_type = 2;
+                no_flags_flag = 1;
                 break;
 
             case 'l':
                 sort_type = 1;
+                no_flags_flag = 1;
                 break;
 
             case 's':
                 sort_type = 3;
+                no_flags_flag = 1;
                 break;
 
             case 'a':
                 sort_type = 0;
+                no_flags_flag = 1;
                 break;
 
             case 'u':
@@ -375,29 +409,31 @@ int main(int argc, char *argv[])
             print_sorted(r_flag, lines_to_print, content_array);
             array_free(content_array, &wordcount);
             exit(0);
-    }else{
-        for(int i = 0; i < argc; ++i){
-            printf("%s\n", argv[i]);
-        }
     }
-    puts("prepping to sort");
-    const char *filename = "sorttest";
-    char **content_array = setup(&wordcount, filename);
+    if(filename == NULL){
+        exit(1);
+    }
+    printf("AI BEFORE: %d\n", ai);
+    char **content_array = setup(&wordcount, filename, &ai);
+    printf("AI AFTER: %d\n", ai);
     if(u_flag == 1){
         content_array = make_unique(content_array, &wordcount);
     }
     lines_to_print = wordcount;
     if(sort_type == 0){
+        //puts("default sort");
         qsort(content_array, wordcount, sizeof(char *), str_cmp);
     }
     else if(sort_type == 1){
+        //puts("len sort");
         qsort(content_array, wordcount, sizeof(char *), len_cmp);
     }
     else if(sort_type == 2){
+        //puts("num sort");
         qsort(content_array, wordcount, sizeof(char *), num_cmp);
     }
     else if(sort_type == 3){
-        puts("scrabble sort");
+        //puts("scrabble sort");
         qsort(content_array, wordcount, sizeof(char *), scr_cmp);
     }
 

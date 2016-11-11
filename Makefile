@@ -15,7 +15,7 @@ clean:
 debug: 
 	CFLAGS+=-g
 debug: 
-	cc -g ws.c
+	cc -g ws.c -o ws
 profile: 
 	FLAGS+=-pg
 profile: 
