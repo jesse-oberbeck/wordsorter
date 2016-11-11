@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <ctype.h>
 
 void print_help(void)
 {
@@ -132,6 +133,7 @@ int scrabble_convert(char letter)
     return(score);
 }
 
+/*Scrabble compare.*/
 int scr_cmp(const void *a, const void *b)
 {
     char **ap = (char**)a;
@@ -139,14 +141,14 @@ int scr_cmp(const void *a, const void *b)
     int total_score_a = 0;
     int total_score_b = 0;
     for(size_t i = 0; i < strlen(*ap); ++i){
-        char letter = *ap[i];
+        char letter = toupper(*ap[i]);
         total_score_a += scrabble_convert(letter);
     }
-    for(size_t i = 0; i < strlen(*bp); ++i){
-        char letter = *bp[i];
+    for(size_t i2 = 0; i2 < strlen(*bp); ++i2){
+        char letter = toupper(*bp[i2]);
         total_score_b += scrabble_convert(letter);
     }
-    printf("totals %d - %d = %d\n", total_score_a, total_score_b, (total_score_a - total_score_b));
+    //printf("totals %d - %d = %d\n", total_score_a, total_score_b, (total_score_a - total_score_b));
     return(total_score_a - total_score_b);
 }
 
@@ -196,7 +198,7 @@ int file_size(FILE *words)
     fseek(words, 0, SEEK_END);
     long end = ftell(words);
     int filesize = (end - start) + 1;
-    printf("\nfilesize: %i\n", filesize);
+    //printf("\nfilesize: %i\n", filesize);
     fseek(words, 0, SEEK_SET);
     return(filesize);
 }
@@ -221,7 +223,7 @@ int word_count(char *contents)
         wordcount++;
         word = strtok(NULL, " ;,.\n\t");
     }
-    printf("wordcount: %d\n\n", wordcount);
+    //printf("file total wordcount: %d\n\n", wordcount);
     return(wordcount);
 }
 
@@ -277,7 +279,7 @@ char ** make_unique(char **content_array, int *wordcount)
     int i = 0;
     int index = 0;
     int match_flag = 0;
-    while(i < 348){
+    while(i < *wordcount){
         for(int i2 = 0; unique_array[i2] != '\0'; ++i2){
             //printf("i: %d i2: %d\n", i, i2);
             if(strcmp(content_array[i], unique_array[i2]) == 0){
